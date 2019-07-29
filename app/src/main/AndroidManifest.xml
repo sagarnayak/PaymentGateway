@@ -13,6 +13,11 @@
             android:theme="@style/AppTheme"
             tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity
+                android:name=".ui.item_list.ItemsList"
+                android:label="@string/title_activity_items_list"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
                 android:name=".ui.splash.Splash"
                 android:label="@string/title_activity_splash"
                 android:theme="@style/AppTheme.NoActionBar">
