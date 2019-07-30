@@ -1,21 +1,84 @@
 package com.sagar.android.paymentgateway.ui.item_list
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import com.razorpay.Checkout
+import android.view.Menu
+import android.view.MenuItem
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.sagar.android.paymentgateway.R
-import kotlinx.android.synthetic.main.activity_items_list.*
+import com.sagar.android.paymentgateway.databinding.ActivityItemsListBinding
+import com.sagar.android.paymentgateway.model.Event
+import com.sagar.android.paymentgateway.model.Result
+import com.sagar.android.paymentgateway.ui.login.Login
+import com.sagar.android.paymentgateway.util.SuperActivity
+import org.kodein.di.KodeinAware
+import org.kodein.di.generic.instance
 
-class ItemsList : AppCompatActivity() {
+class ItemsList : SuperActivity(), KodeinAware {
+
+    override val kodein by org.kodein.di.android.kodein()
+
+    private lateinit var binding: ActivityItemsListBinding
+    private val viewModelProvider: ItemListViewModelProvider by instance()
+    private lateinit var viewModel: ItemListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_items_list)
-        setSupportActionBar(toolbar)
 
-        var checkout=Checkout()
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_items_list)
+        binding.context = this
 
-        checkout.setKeyID("sagarnayak")
+        setSupportActionBar(binding.toolbar)
+
+        if (supportActionBar != null) {
+            title = ""
+        }
+
+        viewModel = ViewModelProviders.of(this, viewModelProvider).get(ItemListViewModel::class.java)
+
+        bindToViewModel()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(
+            R.menu.item_list_menu,
+            menu
+        )
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item?.itemId == R.id.action_logout) {
+            processForLogout()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun bindToViewModel() {
+        viewModel.logoutResult.observe(
+            this,
+            Observer<Event<Result>> { t ->
+                if (t!!.shouldReadContent())
+                    processLogoutResult(t.getContent()!!)
+            }
+        )
+    }
+
+    private fun processForLogout() {
+        showProgress()
+        viewModel.logout()
+    }
+
+    private fun processLogoutResult(result: Result) {
+        hideProgress()
+        if (result.result == com.sagar.android.paymentgateway.core.Result.FAIL) {
+            showMessageInDialog(result.message)
+            return
+        }
+        startActivity(Intent(this, Login::class.java))
+        finish()
+    }
 }

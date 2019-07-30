@@ -5,6 +5,8 @@ import com.sagar.android.logutilmaster.LogUtil
 import com.sagar.android.paymentgateway.core.KeyWordsAndConstants
 import com.sagar.android.paymentgateway.di.NetworkModule
 import com.sagar.android.paymentgateway.repository.Repository
+import com.sagar.android.paymentgateway.ui.item_list.ItemListViewModelProvider
+import com.sagar.android.paymentgateway.ui.signup.SignUpViewModelProvider
 import com.sagar.android.paymentgateway.ui.splash.SplashViewModelProvider
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
@@ -31,8 +33,14 @@ class ApplicationClass : Application(), KodeinAware {
 
         bind() from singleton { NetworkModule(instance()).apiInterface }
 
-        bind<Repository>() with singleton { Repository(instance(), instance()) }
+//        bind() from singleton { SharedPreferenceModule(instance()) }
+
+        bind() from singleton { Repository(instance(), instance(), instance()) }
 
         bind() from provider { SplashViewModelProvider(instance()) }
+
+        bind() from provider { SignUpViewModelProvider(instance()) }
+
+        bind() from provider { ItemListViewModelProvider(instance()) }
     }
 }

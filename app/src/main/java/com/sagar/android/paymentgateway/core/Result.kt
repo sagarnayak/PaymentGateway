@@ -1,5 +1,5 @@
 package com.sagar.android.paymentgateway.core
 
-object Keys{
-
+enum class Result {
+    OK, FAIL
 }

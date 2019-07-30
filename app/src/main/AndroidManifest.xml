@@ -3,6 +3,8 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="com.sagar.android.paymentgateway">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
             android:name=".application.ApplicationClass"
             android:allowBackup="true"
@@ -12,6 +14,16 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+        <activity
+                android:name=".ui.signup.SignUp"
+                android:label="@string/title_activity_sign_up"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+                android:name=".ui.login.Login"
+                android:label="@string/title_activity_login"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
         <activity
                 android:name=".ui.item_list.ItemsList"
                 android:label="@string/title_activity_items_list"

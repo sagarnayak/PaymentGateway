@@ -4,4 +4,8 @@ import androidx.lifecycle.ViewModel
 import com.sagar.android.paymentgateway.repository.Repository
 
 class SplashViewModel(var repository: Repository) : ViewModel() {
+
+    fun isLoggedIn(): Boolean {
+        return repository.isLoggedIn()
+    }
 }

@@ -5,7 +5,7 @@
 
         <variable
                 name="context"
-                type="com.sagar.android.paymentgateway.ui.item_list.ItemsList"/>
+                type="com.sagar.android.paymentgateway.ui.signup.SignUp"/>
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -14,7 +14,7 @@
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".ui.item_list.ItemsList">
+            tools:context=".ui.signup.SignUp">
 
         <com.google.android.material.appbar.AppBarLayout
                 android:layout_height="wrap_content"
@@ -31,8 +31,8 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <include
-                layout="@layout/content_items_list"
-                android:id="@+id/content_items_list"
+                layout="@layout/content_sign_up"
+                android:id="@+id/content_sign_up"
                 tools:context="@{context}"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

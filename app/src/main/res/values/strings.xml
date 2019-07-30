@@ -2,4 +2,6 @@
     <string name="app_name">PaymentGateway</string>
     <string name="title_activity_splash">Splash</string>
     <string name="title_activity_items_list">ItemsList</string>
+    <string name="title_activity_login">Login</string>
+    <string name="title_activity_sign_up">SignUp</string>
 </resources>
