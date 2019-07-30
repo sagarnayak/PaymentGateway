@@ -6,6 +6,7 @@ import com.sagar.android.paymentgateway.core.KeyWordsAndConstants
 import com.sagar.android.paymentgateway.di.NetworkModule
 import com.sagar.android.paymentgateway.repository.Repository
 import com.sagar.android.paymentgateway.ui.item_list.ItemListViewModelProvider
+import com.sagar.android.paymentgateway.ui.login.LoginViewModelProvider
 import com.sagar.android.paymentgateway.ui.signup.SignUpViewModelProvider
 import com.sagar.android.paymentgateway.ui.splash.SplashViewModelProvider
 import org.kodein.di.Kodein
@@ -42,5 +43,7 @@ class ApplicationClass : Application(), KodeinAware {
         bind() from provider { SignUpViewModelProvider(instance()) }
 
         bind() from provider { ItemListViewModelProvider(instance()) }
+
+        bind() from provider { LoginViewModelProvider(instance()) }
     }
 }

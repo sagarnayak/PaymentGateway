@@ -5,10 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.sagar.android.logutilmaster.LogUtil
 import com.sagar.android.paymentgateway.core.KeyWordsAndConstants
-import com.sagar.android.paymentgateway.model.Event
-import com.sagar.android.paymentgateway.model.Result
-import com.sagar.android.paymentgateway.model.SignUpRequest
-import com.sagar.android.paymentgateway.model.UserData
+import com.sagar.android.paymentgateway.model.*
 import com.sagar.android.paymentgateway.repository.retrofit.ApiInterface
 import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -30,6 +27,7 @@ class Repository(
 
     //vars
     var signUpResult: MutableLiveData<Event<Result>> = MutableLiveData()
+    var loginResult: MutableLiveData<Event<Result>> = MutableLiveData()
     var logoutResult: MutableLiveData<Event<Result>> = MutableLiveData()
 
     //api calls
@@ -80,6 +78,62 @@ class Repository(
 
                     override fun onError(e: Throwable) {
                         signUpResult.postValue(
+                            Event(
+                                content = Result(
+                                    result = com.sagar.android.paymentgateway.core.Result.FAIL,
+                                    message = getErrorMessage(e)
+                                )
+                            )
+                        )
+                    }
+                }
+            )
+    }
+
+    fun login(
+        email: String,
+        password: String
+    ) {
+        apiInterface.login(
+            LoginRequest(email, password)
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                object : Observer<Response<ResponseBody>> {
+                    override fun onComplete() {
+                    }
+
+                    override fun onSubscribe(d: Disposable) {
+                    }
+
+                    override fun onNext(t: Response<ResponseBody>) {
+                        if (t.code() == 200) {
+                            loginResult.postValue(
+                                Event(
+                                    content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
+                                )
+                            )
+                            saveUserData(
+                                JSONObject(
+                                    t.body()?.string()
+                                )
+                            )
+                            loggedIn()
+                        } else {
+                            loginResult.postValue(
+                                Event(
+                                    content = Result(
+                                        result = com.sagar.android.paymentgateway.core.Result.FAIL,
+                                        message = getErrorMessage(t.errorBody()!!)
+                                    )
+                                )
+                            )
+                        }
+                    }
+
+                    override fun onError(e: Throwable) {
+                        loginResult.postValue(
                             Event(
                                 content = Result(
                                     result = com.sagar.android.paymentgateway.core.Result.FAIL,

@@ -7,10 +7,12 @@ import android.view.MenuItem
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.sagar.android.paymentgateway.R
 import com.sagar.android.paymentgateway.databinding.ActivityItemsListBinding
 import com.sagar.android.paymentgateway.model.Event
 import com.sagar.android.paymentgateway.model.Result
+import com.sagar.android.paymentgateway.ui.item_list.adapter.ItemAdapter
 import com.sagar.android.paymentgateway.ui.login.Login
 import com.sagar.android.paymentgateway.util.SuperActivity
 import org.kodein.di.KodeinAware
@@ -40,6 +42,8 @@ class ItemsList : SuperActivity(), KodeinAware {
         viewModel = ViewModelProviders.of(this, viewModelProvider).get(ItemListViewModel::class.java)
 
         bindToViewModel()
+
+        setList()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -81,4 +85,17 @@ class ItemsList : SuperActivity(), KodeinAware {
         startActivity(Intent(this, Login::class.java))
         finish()
     }
+
+    private fun setList() {
+        binding.contentItemsList.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.contentItemsList.recyclerView.adapter = ItemAdapter(
+            object : ItemAdapter.CallBack {
+                override fun buy() {
+                    buyItem()
+                }
+            }
+        )
+    }
+
+    private fun buyItem() {}
 }

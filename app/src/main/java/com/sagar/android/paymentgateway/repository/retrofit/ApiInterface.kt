@@ -1,5 +1,6 @@
 package com.sagar.android.paymentgateway.repository.retrofit
 
+import com.sagar.android.paymentgateway.model.LoginRequest
 import com.sagar.android.paymentgateway.model.SignUpRequest
 import io.reactivex.Observable
 import okhttp3.ResponseBody
@@ -13,6 +14,11 @@ interface ApiInterface {
     @POST("signUp")
     fun signup(
         @Body signUpRequest: SignUpRequest
+    ): Observable<Response<ResponseBody>>
+
+    @POST("login")
+    fun login(
+        @Body loginRequest: LoginRequest
     ): Observable<Response<ResponseBody>>
 
     @POST("logout")
