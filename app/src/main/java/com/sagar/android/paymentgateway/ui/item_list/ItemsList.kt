@@ -8,23 +8,33 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.razorpay.Checkout
+import com.razorpay.PaymentData
+import com.razorpay.PaymentResultWithDataListener
+import com.sagar.android.logutilmaster.LogUtil
 import com.sagar.android.paymentgateway.R
 import com.sagar.android.paymentgateway.databinding.ActivityItemsListBinding
+import com.sagar.android.paymentgateway.model.CreateORderIdReq
 import com.sagar.android.paymentgateway.model.Event
+import com.sagar.android.paymentgateway.model.NotesForOrderIdReq
 import com.sagar.android.paymentgateway.model.Result
 import com.sagar.android.paymentgateway.ui.item_list.adapter.ItemAdapter
 import com.sagar.android.paymentgateway.ui.login.Login
 import com.sagar.android.paymentgateway.util.SuperActivity
+import org.json.JSONObject
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.instance
 
-class ItemsList : SuperActivity(), KodeinAware {
+
+class ItemsList : SuperActivity(), KodeinAware, PaymentResultWithDataListener {
 
     override val kodein by org.kodein.di.android.kodein()
 
     private lateinit var binding: ActivityItemsListBinding
     private val viewModelProvider: ItemListViewModelProvider by instance()
+    private val logUtil: LogUtil by instance()
     private lateinit var viewModel: ItemListViewModel
+    private val checkout = Checkout()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +54,8 @@ class ItemsList : SuperActivity(), KodeinAware {
         bindToViewModel()
 
         setList()
+
+        Checkout.preload(applicationContext)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -67,6 +79,40 @@ class ItemsList : SuperActivity(), KodeinAware {
             Observer<Event<Result>> { t ->
                 if (t!!.shouldReadContent())
                     processLogoutResult(t.getContent()!!)
+            }
+        )
+
+        viewModel.razorPayKeySuccess.observe(
+            this,
+            Observer<Event<String>> { t ->
+                if (t!!.shouldReadContent())
+                    gotRazorPayKey(t.getContent()!!)
+            }
+        )
+
+        viewModel.orderIdSuccess.observe(
+            this,
+            Observer<Event<JSONObject>> { t ->
+                if (t!!.shouldReadContent())
+                    orderIdCreated(t.getContent()!!)
+            }
+        )
+
+        viewModel.verifyPaymentSuccess.observe(
+            this,
+            Observer<Event<Result>> { t ->
+                if (t!!.shouldReadContent()) {
+                    t.readContent()
+                    paymentVerified()
+                }
+            }
+        )
+
+        viewModel.paymentFail.observe(
+            this,
+            Observer<Event<String>> { t ->
+                if (t!!.shouldReadContent())
+                    paymentFailed(t.getContent()!!)
             }
         )
     }
@@ -97,5 +143,66 @@ class ItemsList : SuperActivity(), KodeinAware {
         )
     }
 
-    private fun buyItem() {}
+    private fun buyItem() {
+        showProgress()
+        viewModel.getRazorPayKey()
+    }
+
+    private fun gotRazorPayKey(key: String) {
+        createOrder(key)
+    }
+
+    private fun createOrder(key: String) {
+        checkout.setKeyID(key)
+
+        try {
+            val createOrderIdReq = CreateORderIdReq(
+                "INR",
+                "50345",
+                NotesForOrderIdReq(
+                    "men",
+                    "clothing"
+                )
+            )
+
+            viewModel.createOrderId(createOrderIdReq)
+        } catch (e: Exception) {
+            hideProgress()
+            showMessageInDialog("Payment Failed, please contact support")
+        }
+    }
+
+    private fun orderIdCreated(options: JSONObject) {
+        hideProgress()
+        checkout.open(
+            this,
+            options
+        )
+    }
+
+    override fun onPaymentError(p0: Int, p1: String?, p2: PaymentData?) {
+        showMessageInDialog(p1 ?: "Payment error")
+    }
+
+    override fun onPaymentSuccess(p0: String?, p1: PaymentData?) {
+        logUtil.logV(p1?.paymentId ?: "payment id")
+        logUtil.logV(p1?.signature ?: "signature id")
+        logUtil.logV(p1?.orderId ?: "order id")
+        showProgress()
+        viewModel.verifyPayment(
+            p1!!.orderId,
+            p1.paymentId,
+            p1.signature
+        )
+    }
+
+    private fun paymentVerified() {
+        hideProgress()
+        showMessageInDialog("Payment successful")
+    }
+
+    private fun paymentFailed(message: String) {
+        hideProgress()
+        showMessageInDialog(message)
+    }
 }

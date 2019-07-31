@@ -29,6 +29,10 @@ class Repository(
     var signUpResult: MutableLiveData<Event<Result>> = MutableLiveData()
     var loginResult: MutableLiveData<Event<Result>> = MutableLiveData()
     var logoutResult: MutableLiveData<Event<Result>> = MutableLiveData()
+    var razorPayKeySuccess: MutableLiveData<Event<String>> = MutableLiveData()
+    var orderIdSuccess: MutableLiveData<Event<JSONObject>> = MutableLiveData()
+    var verifyPaymentSuccess: MutableLiveData<Event<Result>> = MutableLiveData()
+    var paymentFail: MutableLiveData<Event<String>> = MutableLiveData()
 
     //api calls
     fun signUp(
@@ -190,6 +194,135 @@ class Repository(
                             )
                         )
                     }
+                }
+            )
+    }
+
+    fun getRazorPayKey() {
+        apiInterface.getRazorPayKey(
+            getAuthToken()
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                object : Observer<Response<ResponseBody>> {
+                    override fun onComplete() {
+                    }
+
+                    override fun onSubscribe(d: Disposable) {
+                    }
+
+                    override fun onNext(t: Response<ResponseBody>) {
+                        when (t.code()) {
+                            200 -> {
+                                val json = JSONObject(t.body()!!.string())
+                                razorPayKeySuccess.postValue(
+                                    Event(json.getString("key"))
+                                )
+                            }
+                            else -> {
+                                paymentFail.postValue(
+                                    Event("Failed to get server credentials")
+                                )
+                            }
+                        }
+                    }
+
+                    override fun onError(e: Throwable) {
+                        paymentFail.postValue(
+                            Event(getErrorMessage(e))
+                        )
+                    }
+
+                }
+            )
+    }
+
+    fun createOrderId(
+        req: CreateORderIdReq
+    ) {
+        apiInterface.createOrderId(
+            getAuthToken(),
+            req
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                object : Observer<Response<ResponseBody>> {
+                    override fun onComplete() {
+                    }
+
+                    override fun onSubscribe(d: Disposable) {
+                    }
+
+                    override fun onNext(t: Response<ResponseBody>) {
+                        when (t.code()) {
+                            200 -> {
+                                val json = JSONObject(t.body()!!.string())
+                                orderIdSuccess.postValue(
+                                    Event(json)
+                                )
+                            }
+                            else -> {
+                                paymentFail.postValue(
+                                    Event("Failed to create order id")
+                                )
+                            }
+                        }
+                    }
+
+                    override fun onError(e: Throwable) {
+                        paymentFail.postValue(
+                            Event(getErrorMessage(e))
+                        )
+                    }
+
+                }
+            )
+    }
+
+    fun verifyPayment(
+        orderId: String,
+        paymentId: String,
+        signature: String
+    ) {
+        apiInterface.verifyPayment(
+            getAuthToken(),
+            VerifyPaymentReq(
+                orderId, paymentId, signature
+            )
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                object : Observer<Response<ResponseBody>> {
+                    override fun onComplete() {
+                    }
+
+                    override fun onSubscribe(d: Disposable) {
+                    }
+
+                    override fun onNext(t: Response<ResponseBody>) {
+                        when (t.code()) {
+                            200 -> {
+                                verifyPaymentSuccess.postValue(
+                                    Event(Result(result = com.sagar.android.paymentgateway.core.Result.OK))
+                                )
+                            }
+                            else -> {
+                                paymentFail.postValue(
+                                    Event(getErrorMessage(t.errorBody()!!))
+                                )
+                            }
+                        }
+                    }
+
+                    override fun onError(e: Throwable) {
+                        paymentFail.postValue(
+                            Event(getErrorMessage(e))
+                        )
+                    }
+
                 }
             )
     }
