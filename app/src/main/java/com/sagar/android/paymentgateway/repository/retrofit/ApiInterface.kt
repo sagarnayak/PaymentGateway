@@ -1,6 +1,6 @@
 package com.sagar.android.paymentgateway.repository.retrofit
 
-import com.sagar.android.paymentgateway.model.CreateORderIdReq
+import com.sagar.android.paymentgateway.model.CreateOrderIdReq
 import com.sagar.android.paymentgateway.model.LoginRequest
 import com.sagar.android.paymentgateway.model.SignUpRequest
 import com.sagar.android.paymentgateway.model.VerifyPaymentReq
@@ -37,7 +37,7 @@ interface ApiInterface {
     @POST("createOrder")
     fun createOrderId(
         @Header("Authorization") authHeader: String,
-        @Body reqBody: CreateORderIdReq
+        @Body reqBody: CreateOrderIdReq
     ): Observable<Response<ResponseBody>>
 
     @POST("verifyPayment")

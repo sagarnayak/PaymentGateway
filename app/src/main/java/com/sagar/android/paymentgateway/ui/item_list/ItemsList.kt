@@ -14,7 +14,7 @@ import com.razorpay.PaymentResultWithDataListener
 import com.sagar.android.logutilmaster.LogUtil
 import com.sagar.android.paymentgateway.R
 import com.sagar.android.paymentgateway.databinding.ActivityItemsListBinding
-import com.sagar.android.paymentgateway.model.CreateORderIdReq
+import com.sagar.android.paymentgateway.model.CreateOrderIdReq
 import com.sagar.android.paymentgateway.model.Event
 import com.sagar.android.paymentgateway.model.NotesForOrderIdReq
 import com.sagar.android.paymentgateway.model.Result
@@ -156,16 +156,16 @@ class ItemsList : SuperActivity(), KodeinAware, PaymentResultWithDataListener {
         checkout.setKeyID(key)
 
         try {
-            val createOrderIdReq = CreateORderIdReq(
-                "INR",
-                "50345",
-                NotesForOrderIdReq(
-                    "men",
-                    "clothing"
+            viewModel.createOrderId(
+                CreateOrderIdReq(
+                    "INR",
+                    "50345",
+                    NotesForOrderIdReq(
+                        "men",
+                        "clothing"
+                    )
                 )
             )
-
-            viewModel.createOrderId(createOrderIdReq)
         } catch (e: Exception) {
             hideProgress()
             showMessageInDialog("Payment Failed, please contact support")

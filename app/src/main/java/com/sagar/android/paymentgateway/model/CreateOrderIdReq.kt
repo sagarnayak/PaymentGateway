@@ -2,7 +2,7 @@ package com.sagar.android.paymentgateway.model
 
 import com.google.gson.annotations.SerializedName
 
-data class CreateORderIdReq(
+data class CreateOrderIdReq(
     val currency: String,
     val amount: String,
     @SerializedName("notes")

@@ -1,5 +1,10 @@
 package com.sagar.android.paymentgateway.repository
 
+import android.app.AlarmManager
+import android.app.Application
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
@@ -7,6 +12,7 @@ import com.sagar.android.logutilmaster.LogUtil
 import com.sagar.android.paymentgateway.core.KeyWordsAndConstants
 import com.sagar.android.paymentgateway.model.*
 import com.sagar.android.paymentgateway.repository.retrofit.ApiInterface
+import com.sagar.android.paymentgateway.ui.splash.Splash
 import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -17,12 +23,14 @@ import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 import java.net.SocketTimeoutException
+import kotlin.system.exitProcess
 
 
 class Repository(
     var apiInterface: ApiInterface,
     var preference: SharedPreferences,
-    var logUtil: LogUtil
+    var logUtil: LogUtil,
+    var application: Application
 ) {
 
     //vars
@@ -56,27 +64,30 @@ class Repository(
                     }
 
                     override fun onNext(t: Response<ResponseBody>) {
-                        if (t.code() == 200) {
-                            signUpResult.postValue(
-                                Event(
-                                    content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
-                                )
-                            )
-                            saveUserData(
-                                JSONObject(
-                                    t.body()?.string()
-                                )
-                            )
-                            loggedIn()
-                        } else {
-                            signUpResult.postValue(
-                                Event(
-                                    content = Result(
-                                        result = com.sagar.android.paymentgateway.core.Result.FAIL,
-                                        message = getErrorMessage(t.errorBody()!!)
+                        when (t.code()) {
+                            200 -> {
+                                signUpResult.postValue(
+                                    Event(
+                                        content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
                                     )
                                 )
-                            )
+                                saveUserData(
+                                    JSONObject(
+                                        t.body()?.string()
+                                    )
+                                )
+                                loggedIn()
+                            }
+                            else -> {
+                                signUpResult.postValue(
+                                    Event(
+                                        content = Result(
+                                            result = com.sagar.android.paymentgateway.core.Result.FAIL,
+                                            message = getErrorMessage(t.errorBody()!!)
+                                        )
+                                    )
+                                )
+                            }
                         }
                     }
 
@@ -112,27 +123,30 @@ class Repository(
                     }
 
                     override fun onNext(t: Response<ResponseBody>) {
-                        if (t.code() == 200) {
-                            loginResult.postValue(
-                                Event(
-                                    content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
-                                )
-                            )
-                            saveUserData(
-                                JSONObject(
-                                    t.body()?.string()
-                                )
-                            )
-                            loggedIn()
-                        } else {
-                            loginResult.postValue(
-                                Event(
-                                    content = Result(
-                                        result = com.sagar.android.paymentgateway.core.Result.FAIL,
-                                        message = getErrorMessage(t.errorBody()!!)
+                        when (t.code()) {
+                            200 -> {
+                                loginResult.postValue(
+                                    Event(
+                                        content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
                                     )
                                 )
-                            )
+                                saveUserData(
+                                    JSONObject(
+                                        t.body()?.string()
+                                    )
+                                )
+                                loggedIn()
+                            }
+                            else -> {
+                                loginResult.postValue(
+                                    Event(
+                                        content = Result(
+                                            result = com.sagar.android.paymentgateway.core.Result.FAIL,
+                                            message = getErrorMessage(t.errorBody()!!)
+                                        )
+                                    )
+                                )
+                            }
                         }
                     }
 
@@ -165,22 +179,26 @@ class Repository(
                     }
 
                     override fun onNext(t: Response<ResponseBody>) {
-                        if (t.code() == 200) {
-                            clearAllData()
-                            logoutResult.postValue(
-                                Event(
-                                    content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
-                                )
-                            )
-                        } else {
-                            logoutResult.postValue(
-                                Event(
-                                    content = Result(
-                                        result = com.sagar.android.paymentgateway.core.Result.FAIL,
-                                        message = getErrorMessage(t.errorBody()!!)
+                        when (t.code()) {
+                            200 -> {
+                                clearAllData()
+                                logoutResult.postValue(
+                                    Event(
+                                        content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
                                     )
                                 )
-                            )
+                            }
+                            401 -> notAuthorised()
+                            else -> {
+                                logoutResult.postValue(
+                                    Event(
+                                        content = Result(
+                                            result = com.sagar.android.paymentgateway.core.Result.FAIL,
+                                            message = getErrorMessage(t.errorBody()!!)
+                                        )
+                                    )
+                                )
+                            }
                         }
                     }
 
@@ -220,6 +238,7 @@ class Repository(
                                     Event(json.getString("key"))
                                 )
                             }
+                            401 -> notAuthorised()
                             else -> {
                                 paymentFail.postValue(
                                     Event("Failed to get server credentials")
@@ -239,7 +258,7 @@ class Repository(
     }
 
     fun createOrderId(
-        req: CreateORderIdReq
+        req: CreateOrderIdReq
     ) {
         apiInterface.createOrderId(
             getAuthToken(),
@@ -263,6 +282,7 @@ class Repository(
                                     Event(json)
                                 )
                             }
+                            401 -> notAuthorised()
                             else -> {
                                 paymentFail.postValue(
                                     Event("Failed to create order id")
@@ -309,6 +329,7 @@ class Repository(
                                     Event(Result(result = com.sagar.android.paymentgateway.core.Result.OK))
                                 )
                             }
+                            401 -> notAuthorised()
                             else -> {
                                 paymentFail.postValue(
                                     Event(getErrorMessage(t.errorBody()!!))
@@ -382,6 +403,37 @@ class Repository(
 
     private fun getAuthToken(): String {
         return "Bearer " + getToken()
+    }
+
+    private fun notAuthorised() {
+        clearAllData()
+
+        Thread(
+            Runnable() {
+                Thread.sleep(1000)
+                restartApp()
+            }
+        )
+    }
+
+    private fun restartApp() {
+        val pendingIntent: PendingIntent =
+            PendingIntent.getActivity(
+                application,
+                123,
+                Intent(application, Splash::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+        val alarmManager: AlarmManager = application.getSystemService(
+            Context.ALARM_SERVICE
+        ) as AlarmManager
+
+        alarmManager.set(
+            AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent
+        )
+
+        exitProcess(0)
     }
 
     //util function

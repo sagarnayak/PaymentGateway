@@ -18,6 +18,7 @@ import org.kodein.di.generic.instance
 import org.kodein.di.generic.provider
 import org.kodein.di.generic.singleton
 
+@Suppress("unused")
 class ApplicationClass : Application(), KodeinAware {
 
     override val kodein: Kodein = Kodein.lazy {
@@ -33,8 +34,6 @@ class ApplicationClass : Application(), KodeinAware {
         }
 
         bind() from singleton { NetworkModule(instance()).apiInterface }
-
-//        bind() from singleton { SharedPreferenceModule(instance()) }
 
         bind() from singleton { Repository(instance(), instance(), instance()) }
 

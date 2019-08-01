@@ -2,7 +2,7 @@ package com.sagar.android.paymentgateway.ui.item_list
 
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
-import com.sagar.android.paymentgateway.model.CreateORderIdReq
+import com.sagar.android.paymentgateway.model.CreateOrderIdReq
 import com.sagar.android.paymentgateway.model.Event
 import com.sagar.android.paymentgateway.model.Result
 import com.sagar.android.paymentgateway.repository.Repository
@@ -50,7 +50,7 @@ class ItemListViewModel(private var repository: Repository) : ViewModel() {
         repository.getRazorPayKey()
     }
 
-    fun createOrderId(req: CreateORderIdReq) {
+    fun createOrderId(req: CreateOrderIdReq) {
         repository.createOrderId(req)
     }
 
