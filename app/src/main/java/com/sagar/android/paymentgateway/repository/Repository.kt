@@ -13,6 +13,7 @@ import com.sagar.android.paymentgateway.core.KeyWordsAndConstants
 import com.sagar.android.paymentgateway.model.*
 import com.sagar.android.paymentgateway.repository.retrofit.ApiInterface
 import com.sagar.android.paymentgateway.ui.splash.Splash
+import com.sagar.android.paymentgateway.util.StatusCode
 import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -27,10 +28,10 @@ import kotlin.system.exitProcess
 
 
 class Repository(
-    var apiInterface: ApiInterface,
-    var preference: SharedPreferences,
-    var logUtil: LogUtil,
-    var application: Application
+    private var apiInterface: ApiInterface,
+    private var preference: SharedPreferences,
+    private var logUtil: LogUtil,
+    private var application: Application
 ) {
 
     //vars
@@ -65,7 +66,7 @@ class Repository(
 
                     override fun onNext(t: Response<ResponseBody>) {
                         when (t.code()) {
-                            200 -> {
+                            StatusCode.OK.code -> {
                                 signUpResult.postValue(
                                     Event(
                                         content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
@@ -124,7 +125,7 @@ class Repository(
 
                     override fun onNext(t: Response<ResponseBody>) {
                         when (t.code()) {
-                            200 -> {
+                            StatusCode.OK.code -> {
                                 loginResult.postValue(
                                     Event(
                                         content = Result(result = com.sagar.android.paymentgateway.core.Result.OK)
@@ -180,7 +181,7 @@ class Repository(
 
                     override fun onNext(t: Response<ResponseBody>) {
                         when (t.code()) {
-                            200 -> {
+                            StatusCode.OK.code -> {
                                 clearAllData()
                                 logoutResult.postValue(
                                     Event(
@@ -188,7 +189,7 @@ class Repository(
                                     )
                                 )
                             }
-                            401 -> notAuthorised()
+                            StatusCode.Unauthorized.code -> notAuthorised()
                             else -> {
                                 logoutResult.postValue(
                                     Event(
@@ -232,13 +233,13 @@ class Repository(
 
                     override fun onNext(t: Response<ResponseBody>) {
                         when (t.code()) {
-                            200 -> {
+                            StatusCode.OK.code -> {
                                 val json = JSONObject(t.body()!!.string())
                                 razorPayKeySuccess.postValue(
                                     Event(json.getString("key"))
                                 )
                             }
-                            401 -> notAuthorised()
+                            StatusCode.Unauthorized.code -> notAuthorised()
                             else -> {
                                 paymentFail.postValue(
                                     Event("Failed to get server credentials")
@@ -276,13 +277,13 @@ class Repository(
 
                     override fun onNext(t: Response<ResponseBody>) {
                         when (t.code()) {
-                            200 -> {
+                            StatusCode.OK.code -> {
                                 val json = JSONObject(t.body()!!.string())
                                 orderIdSuccess.postValue(
                                     Event(json)
                                 )
                             }
-                            401 -> notAuthorised()
+                            StatusCode.Unauthorized.code -> notAuthorised()
                             else -> {
                                 paymentFail.postValue(
                                     Event("Failed to create order id")
@@ -324,12 +325,12 @@ class Repository(
 
                     override fun onNext(t: Response<ResponseBody>) {
                         when (t.code()) {
-                            200 -> {
+                            StatusCode.OK.code -> {
                                 verifyPaymentSuccess.postValue(
                                     Event(Result(result = com.sagar.android.paymentgateway.core.Result.OK))
                                 )
                             }
-                            401 -> notAuthorised()
+                            StatusCode.Unauthorized.code -> notAuthorised()
                             else -> {
                                 paymentFail.postValue(
                                     Event(getErrorMessage(t.errorBody()!!))
@@ -409,11 +410,11 @@ class Repository(
         clearAllData()
 
         Thread(
-            Runnable() {
+            Runnable {
                 Thread.sleep(1000)
                 restartApp()
             }
-        )
+        ).start()
     }
 
     private fun restartApp() {

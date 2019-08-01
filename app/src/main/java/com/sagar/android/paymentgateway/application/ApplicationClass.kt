@@ -35,7 +35,7 @@ class ApplicationClass : Application(), KodeinAware {
 
         bind() from singleton { NetworkModule(instance()).apiInterface }
 
-        bind() from singleton { Repository(instance(), instance(), instance()) }
+        bind() from singleton { Repository(instance(), instance(), instance(), instance()) }
 
         bind() from provider { SplashViewModelProvider(instance()) }
 
