@@ -21,6 +21,8 @@ open class SuperActivity : AppCompatActivity() {
     }
 
     fun showMessageInDialog(message: String) {
-        dialogUtil.showDialogWithMessage(message)
+        dialogUtil.showMessage(
+            message = message
+        )
     }
 }

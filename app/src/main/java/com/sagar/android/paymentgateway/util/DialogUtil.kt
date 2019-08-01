@@ -10,71 +10,93 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.sagar.android.paymentgateway.R
 
 
+@Suppress("SENSELESS_COMPARISON")
 class DialogUtil(private var context: Context) {
 
-    private var customDialog: Dialog? = null
+    private lateinit var customDialog: Dialog
 
-    interface DialogWithOneButtonCallBack {
+    interface CallBack {
         fun dialogCancelled()
 
         fun buttonClicked()
     }
 
-    interface DialogWithMessageCallBack {
+    interface MultiButtonCallBack {
         fun dialogCancelled()
 
-        fun buttonClicked()
+        fun buttonOneClicked()
+
+        fun buttonTwoClicked()
     }
 
-    fun showDialogWithOneButtonAndCallBack(
+    fun showMessage(
         message: String,
-        cancellable: Boolean,
-        dialogWithOneButtonCallBack: DialogWithOneButtonCallBack
+        cancellable: Boolean = true,
+        buttonText: String = "Ok",
+        callBack: CallBack? = null
     ) {
-        if (customDialog != null && customDialog!!.isShowing)
-            customDialog!!.dismiss()
+        if (customDialog != null && customDialog.isShowing)
+            customDialog.dismiss()
         customDialog = Dialog(context)
-        customDialog!!.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        customDialog!!.setContentView(R.layout.dialog_with_single_button)
+        customDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        customDialog.setContentView(R.layout.dialog_with_single_button)
 
-        customDialog!!.window
+        customDialog.window
             ?.setLayout(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
-        customDialog!!.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        val textViewMessage = customDialog!!.findViewById<TextView>(R.id.text_view_message)
-        val buttonAction = customDialog!!.findViewById<TextView>(R.id.button_action)
+        customDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        val textViewMessage = customDialog.findViewById<TextView>(R.id.text_view_message)
+        val buttonAction = customDialog.findViewById<TextView>(R.id.button_action)
 
         textViewMessage.text = message
+        buttonAction.text = buttonText
 
-        customDialog!!.setCancelable(cancellable)
+        customDialog.setCancelable(cancellable)
 
         buttonAction.setOnClickListener {
-            dialogWithOneButtonCallBack.buttonClicked()
-            customDialog!!.dismiss()
+            callBack?.buttonClicked()
+            customDialog.dismiss()
         }
-        customDialog!!.setOnCancelListener { dialogWithOneButtonCallBack.dialogCancelled() }
+        customDialog.setOnCancelListener { callBack?.dialogCancelled() }
 
-        customDialog!!.show()
+        customDialog.show()
     }
 
-    fun showDialogWithMessage(
-        message: String
+    fun showMessage(
+        message: String,
+        cancellable: Boolean = true,
+        buttonOneText: String = "Ok",
+        buttonTwoText: String = "Cancel",
+        multiButtonCallBack: MultiButtonCallBack? = null
     ) {
-        if (customDialog != null && customDialog!!.isShowing)
-            customDialog!!.dismiss()
+        if (customDialog != null && customDialog.isShowing)
+            customDialog.dismiss()
         customDialog = Dialog(context)
-        customDialog!!.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        customDialog!!.setContentView(R.layout.dialog_with_single_button)
+        customDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        customDialog.setContentView(R.layout.dialog_with_two_button)
 
-        customDialog!!.window
+        customDialog.window
             ?.setLayout(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
-        customDialog!!.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        val textViewMessage = customDialog!!.findViewById<TextView>(R.id.text_view_message)
-        val buttonAction = customDialog!!.findViewById<TextView>(R.id.button_action)
+        customDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        val textViewMessage = customDialog.findViewById<TextView>(R.id.text_view_message)
+        val buttonActionOne = customDialog.findViewById<TextView>(R.id.button_action_one)
+        val buttonActionTwo = customDialog.findViewById<TextView>(R.id.button_action_two)
+
         textViewMessage.text = message
-        buttonAction.setOnClickListener {
-            customDialog!!.dismiss()
+        buttonActionOne.text = buttonOneText
+        buttonActionTwo.text = buttonTwoText
+
+        customDialog.setCancelable(cancellable)
+
+        buttonActionOne.setOnClickListener {
+            multiButtonCallBack?.buttonOneClicked()
+            customDialog.dismiss()
         }
-        customDialog!!.setCancelable(true)
-        customDialog!!.show()
+        buttonActionTwo.setOnClickListener {
+            multiButtonCallBack?.buttonTwoClicked()
+            customDialog.dismiss()
+        }
+        customDialog.setOnCancelListener { multiButtonCallBack?.dialogCancelled() }
+
+        customDialog.show()
     }
 }
