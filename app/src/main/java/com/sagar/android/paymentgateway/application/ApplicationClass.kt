@@ -1,6 +1,7 @@
 package com.sagar.android.paymentgateway.application
 
 import android.app.Application
+import android.content.SharedPreferences
 import com.sagar.android.logutilmaster.LogUtil
 import com.sagar.android.paymentgateway.core.KeyWordsAndConstants
 import com.sagar.android.paymentgateway.di.NetworkModule
@@ -18,6 +19,10 @@ import org.kodein.di.generic.instance
 import org.kodein.di.generic.provider
 import org.kodein.di.generic.singleton
 
+/*
+kodein pref injection ref -
+https://github.com/Kodein-Framework/Kodein-DI/issues/234
+ */
 @Suppress("unused")
 class ApplicationClass : Application(), KodeinAware {
 
@@ -35,7 +40,15 @@ class ApplicationClass : Application(), KodeinAware {
 
         bind() from singleton { NetworkModule(instance()).apiInterface }
 
-        bind() from singleton { Repository(instance(), instance(), instance(), instance()) }
+        bind() from singleton {
+            val pref: SharedPreferences by this.kodein.instance(arg = KeyWordsAndConstants.SHARED_PREF_DB)
+            Repository(
+                instance(),
+                pref,
+                instance(),
+                instance()
+            )
+        }
 
         bind() from provider { SplashViewModelProvider(instance()) }
 
