@@ -12,7 +12,7 @@ import com.sagar.android.paymentgateway.R
 
 class DialogUtil(private var context: Context) {
 
-    var customDialog: Dialog? = null
+    private var customDialog: Dialog? = null
 
     interface DialogWithOneButtonCallBack {
         fun dialogCancelled()

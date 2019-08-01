@@ -1,9 +1,9 @@
 package com.sagar.android.paymentgateway.util
 
-import android.view.WindowManager
 import android.app.Activity
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 
 
@@ -16,6 +16,7 @@ import android.view.inputmethod.InputMethodManager
  * [.hideSoftKeyboard]
  * [.hideSoftKeyboardAtStart]
  */
+@Suppress("unused")
 object UiUtil {
 
     /**
@@ -47,7 +48,7 @@ object UiUtil {
      *
      * @param context activity context
      */
-    fun DoNotAllowForSleep(context: Context) {
+    fun doNotAllowForSleep(context: Context) {
         (context as Activity).window
             .addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
